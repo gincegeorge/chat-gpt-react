@@ -21,13 +21,40 @@ function App() {
     return data;
   };
 
+  const autoTypingBotResponse = (text) => {
+    let index = 0;
+    let interval = setInterval(() => {
+      if (index < text.length) {
+        setPosts((prevState) => {
+          let lastItem = prevState.pop();
+          if (lastItem.type !== "bot") {
+            prevState.push({
+              type: "bot",
+              text: text.charAt(index - 1),
+            });
+          } else {
+            prevState.push({
+              type: "bot",
+              text: lastItem.text + text.charAt(index - 1),
+            });
+          }
+          return [...prevState];
+        });
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 20);
+  };
+
   const handleSubmit = () => {
     if (input.trim() === "") return;
     updatePosts(input);
     updatePosts("Loading...", false, true);
     setInput("");
     fetchBotResponse().then((res) => {
-      console.log(res);
+      console.log(res.bot.trim());
+      updatePosts(res.bot.trim(), true);
     });
   };
 
@@ -37,11 +64,9 @@ function App() {
     }
   };
 
-
   const updatePosts = (post, isBot, isLoading) => {
     if (isBot) {
-      console.log(post);
-      updatePosts(res.post.trim(), true);
+      autoTypingBotResponse(post);
     } else {
       setPosts((prevState) => {
         return [
