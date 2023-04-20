@@ -4,20 +4,31 @@ import send from "./assets/send.svg";
 import user from "./assets/user.png";
 import bot from "./assets/bot.png";
 import loadingIcon from "./assets/loader.svg";
-
-let arr = [
-  { type: "user", text: "thsi is a quetion" },
-  { type: "bot", text: "this is an answer" },
-];
+import axios from "axios";
 
 function App() {
   const [input, setInput] = useState("");
-  const [posts, setPosts] = useState(arr);
+  const [posts, setPosts] = useState([]);
+
+  const fetchBotResponse = async () => {
+    const { data } = await axios.post(
+      "http://localhost:4000/",
+      { input },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return data;
+  };
 
   const handleSubmit = () => {
     if (input.trim() === "") return;
     updatePosts(input);
+    updatePosts("Loading...", false, true);
     setInput("");
+    fetchBotResponse().then((res) => {
+      console.log(res);
+    });
   };
 
   const onKeyUP = (e) => {
@@ -26,10 +37,19 @@ function App() {
     }
   };
 
-  const updatePosts = (post) => {
-    setPosts((prevState) => {
-      return [...prevState, { type: "user", text: post }];
-    });
+
+  const updatePosts = (post, isBot, isLoading) => {
+    if (isBot) {
+      console.log(post);
+      updatePosts(res.post.trim(), true);
+    } else {
+      setPosts((prevState) => {
+        return [
+          ...prevState,
+          { type: isLoading ? "loading" : "user", text: post },
+        ];
+      });
+    }
   };
 
   return (
